@@ -38,7 +38,7 @@ int placa_para_int(char * placa){
   return n;
 }
 
-int insere_hash(char ** vetor, char * key, int (* f)(char *, int, char **), int k){
+int insere_hash(int * vetor, int key, int (* f)(int, int, int *), int k){
   int i = f(key, k, vetor);
   if(i != -1){
     vetor[i] = key;
@@ -49,9 +49,12 @@ int insere_hash(char ** vetor, char * key, int (* f)(char *, int, char **), int 
   }
 }
 
-int simple_division(char * key, int k, char ** vetor){
-  int i = 0;
-  return 0;
+int simple_division(int key, int k, int * vetor){
+  int i = (key % 1033 )+ k;
+  if(vetor[i] != -1){
+    return -1;
+  }
+  return i;
 }
 char ** gera_placas(int n){
   char ** placas = malloc(8 * n);
@@ -61,5 +64,8 @@ char ** gera_placas(int n){
   return placas;
 }
 int main(void) {
-  return 0;
+  int * vetor = malloc(4 * 1033);
+  for(int i=0; i<1024; i++){
+    vetor[i] = -1;
+  }
 }
