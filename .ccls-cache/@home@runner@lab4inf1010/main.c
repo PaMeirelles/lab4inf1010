@@ -5,6 +5,8 @@
 #define letras "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 #define numeros "0123456789"
 
+char ** gera_placas(int n);
+
 char gera_letra(){
   int i = rand() % 26;
   return letras[i];
@@ -56,6 +58,27 @@ int simple_division(int key, int k, int * vetor){
   }
   return i;
 }
+
+void testa_func(int(*f)(int, int, int*), int * vetor){
+  char ** placas = malloc(512 * 8);
+  char * keys = malloc(512 * 4);
+  int collisions = 0;
+  clock_t start;
+  clock_t stop;
+  
+  placas = gera_placas(512);
+  for(int i=0; i<512; i++){
+    keys[i] = placa_para_int(placas[i]);
+  }
+  
+   start = clock();
+   for(int i=0; i < 512; i++){
+     collisions += insere_hash(vetor, keys[i], simple_division, 0);
+   }
+  stop = clock();
+  printf("Teste concluído\nDuração: %ldms\nColisões:%d\n", (stop-start), collisions);
+}
+
 char ** gera_placas(int n){
   char ** placas = malloc(8 * n);
   for(int i=0; i < n; i++){
@@ -68,4 +91,6 @@ int main(void) {
   for(int i=0; i<1024; i++){
     vetor[i] = -1;
   }
+  testa_func(simple_division, vetor);
+  return 0;
 }
