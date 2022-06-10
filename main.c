@@ -26,6 +26,16 @@ char * gera_placa(){
   return placa;
 }
 
+int insere_hash(char ** vetor, char * key, int (* f)(char *, int), int k){
+  int i = f(key, k);
+  if(i != -1){
+    vetor[i] = key;
+    return k;
+  }
+  else{
+    return insere_hash(vetor, key, f, k+1);
+  }
+}
 char ** gera_placas(int n){
   char ** placas = malloc(8 * n);
   for(int i=0; i < n; i++){
