@@ -14,8 +14,6 @@ void print_array(int *vetor, int size)
     printf("\n");
 }
 
-char ** gera_placas(int n);
-
 char gera_letra()
 {
   int i = rand() % 26;
@@ -46,6 +44,18 @@ char * gera_placa()
   
   return placa;
 }
+
+char ** gera_placas(int n)
+{
+  char ** placas = malloc(8 * n);
+  for(int i=0; i < n; i++)
+  {
+    placas[i] = gera_placa();
+  }
+  
+  return placas;
+}
+
 
 int placa_para_int(char * placa)
 {
@@ -89,24 +99,9 @@ int insere_hash(int * vetor, int key, int (* f)(int, int, int *, int), int k, in
   }
   else
   {
-    *tem_colisao = 1;
+    tem_colisao[i] = 1;
     return insere_hash(vetor, key, f, k+1, magic_number, tem_colisao);
   }
-}
-
-void remove_hash(int * vetor, int key, int (* f)(int, int, int *, int), int k, int magic_number)
-{
-    // encontra o indice do elemento
-    int pos = search_hash(vetor, key, f, k, magic_number);
-    
-    // se nao achou, mostra mensagem de erro
-    if(pos == -1)
-    {
-        perror("Erro ao remover, elemento nao encontrado");
-    }
-    
-    // se achou, muda o valor na posicao dada para -1
-    vetor[pos] = -1;
 }
 
 /*
@@ -121,30 +116,54 @@ void remove_hash(int * vetor, int key, int (* f)(int, int, int *, int), int k, i
         
         Se percorrer a hash inteira sem encontra o valor, retorna -1
 */
-int search_hash(int *vetor, int key, int (* f)(int, int, int *, int), int k, int magic_number)
+int search_hash(int *vetor, int key, int (* f)(int, int, int *, int), int k, int magic_number, int *tem_colisao)
 {
-    int i = f(key, k, vetor, magic_number);
+  int pos = f(key, k, vetor, magic_number);
     
-    if(vetor[i] == key)
-    {
-        return i;
-    }
+  if(vetor[pos] == key)
+  {
+    return pos;
+  }
     
-    if(vetor[i] == 0)
+  if(tem_colisao[pos] == 0)
+  {
+    for(; pos < 1033; pos++)
     {
-        for(; i < 1033; i++)
-        {
-            if(vetor[i] == key)
-            {
-                return i;
-            }
-        }
+      if(vetor[pos] == key)
+      {
+        return pos;
+      }
     }
+  }
 
-    return -1;
+  return -1;
 }
 
-void testa_insert(int(*f)(int, int, int*, int), int * vetor, int magic_number, int * colisoes, long * tempo, int * keys, int size)
+void remove_hash(int * vetor, int key, int (* f)(int, int, int *, int), int k, int magic_number, int *tem_colisao)
+{
+    // encontra o indice do elemento
+    int pos = search_hash(vetor, key, f, k, magic_number, tem_colisao);
+    
+    // se nao achou, mostra mensagem de erro
+    if(pos == -1)
+    {
+        perror("Erro ao remover, elemento nao encontrado");
+        return;
+    }
+
+    // se achou e teve colisao nessa posicao, muda o valor na posicao dada para 0
+    // se achou e nao teve colisao, muda o valor na posicao dada para -1
+    if(tem_colisao[pos] == 1)
+    {
+      vetor[pos] = 0;
+    }
+    else
+    {
+      vetor[pos] = -1;
+    }
+}
+
+void testa_insert(int(*f)(int, int, int*, int), int * vetor, int magic_number, int * colisoes, long * tempo, int * keys, int size, int *tem_colisao)
 {
   int collisions = 0;
   clock_t start;
@@ -153,7 +172,7 @@ void testa_insert(int(*f)(int, int, int*, int), int * vetor, int magic_number, i
   start = clock();
   for(int i=0; i < size; i++)
   {
-   collisions += insere_hash(vetor, keys[i], f, 0,magic_number);
+   collisions += insere_hash(vetor, keys[i], f, 0, magic_number, tem_colisao);
   }
   
   stop = clock();
@@ -162,7 +181,7 @@ void testa_insert(int(*f)(int, int, int*, int), int * vetor, int magic_number, i
   *tempo = stop-start;
 }
 
-void testa_remocao(int(*f)(int, int, int*, int), int * vetor, int magic_number, long * tempo, int * keys, int size)
+void testa_remocao(int(*f)(int, int, int*, int), int * vetor, int magic_number, long * tempo, int * keys, int size, int *tem_colisao)
 {
   clock_t start;
   clock_t stop;
@@ -170,7 +189,7 @@ void testa_remocao(int(*f)(int, int, int*, int), int * vetor, int magic_number, 
   start = clock();
   for(int i=0; i < (size/2); i++)
   {
-    remove_hash(vetor, keys[i], f, 0, magic_number);
+    remove_hash(vetor, keys[i], f, 0, magic_number, tem_colisao);
   }
   
   stop = clock();
@@ -178,7 +197,7 @@ void testa_remocao(int(*f)(int, int, int*, int), int * vetor, int magic_number, 
   *tempo = stop-start;
 }
 
-void bateria_de_testes_insert(long tempo_limite, int(*f)(int, int, int*, int), int * vetor, int size)
+void bateria_de_testes_insert(long tempo_limite, int(*f)(int, int, int*, int), int * vetor, int size, int *tem_colisao)
 {
   char ** placas;
   int * keys = malloc(size * sizeof(int));
@@ -198,7 +217,7 @@ void bateria_de_testes_insert(long tempo_limite, int(*f)(int, int, int*, int), i
   clock_t start = clock();
   while(clock() - start < tempo_limite)
   {  
-    testa_insert(f, vetor, magic_number, &coli, &tempo, keys, size);
+    testa_insert(f, vetor, magic_number, &coli, &tempo, keys, size, tem_colisao);
     
     if(coli < melhor_colisao)
     {
@@ -215,7 +234,7 @@ void bateria_de_testes_insert(long tempo_limite, int(*f)(int, int, int*, int), i
   }
 }
 
-void bateria_de_testes_remocao(long limite, int(*f)(int, int, int*, int), int *vetor, int size)
+void bateria_de_testes_remocao(long limite, int(*f)(int, int, int*, int), int *vetor, int size, int *tem_colisao)
 {
     char ** placas;
     int * keys = malloc(size * sizeof(int));
@@ -233,7 +252,7 @@ void bateria_de_testes_remocao(long limite, int(*f)(int, int, int*, int), int *v
 
     for(int j = 0; j < size; j++)
     {
-        insere_hash(vetor, keys[j], simple_division, 0, magic_number);
+        insere_hash(vetor, keys[j], simple_division, 0, magic_number, tem_colisao);
     }
 
     // Usei para debugar a remocao, o loop embaixo printa a hash e copia ela para um vetor auxiliar
@@ -274,30 +293,15 @@ void bateria_de_testes_remocao(long limite, int(*f)(int, int, int*, int), int *v
     */
     for (magic_number = 1;magic_number < limite; magic_number++)
     {  
-        printf("Teste\n");
-        // for(int i=0; i < size; i++)
-        // {
-        // printf("Teste\n");
-        for(int j=0; j < size; j++)
-        {
-            vetor[j] = vetor_aux[j];
-        }
+      for(int j = 0; j < size; j++)
+      {
+        insere_hash(vetor, keys[j], simple_division, 0, magic_number, tem_colisao);
+      }
 
-        // printf("Teste\n");
-        testa_remocao(f, vetor, magic_number, &tempo, keys, size);
-        printf("Para um vetor com %d placas, a remocao de metade delas levou %d usando magic number %d\n", size, tempo, magic_number);
+      // printf("Teste\n");
+      testa_remocao(f, vetor, magic_number, &tempo, keys, size, tem_colisao);
+      printf("Para um vetor com %d placas, a remocao de metade delas levou %d usando magic number %d\n", size, tempo, magic_number);
     }
-}
-
-char ** gera_placas(int n)
-{
-  char ** placas = malloc(8 * n);
-  for(int i=0; i < n; i++)
-  {
-    placas[i] = gera_placa();
-  }
-  
-  return placas;
 }
 
 int main(void) 
@@ -305,16 +309,19 @@ int main(void)
   srand(time(NULL));
   
   int * vetor = malloc(1033 * sizeof(int));
+  int * vetor_tem_colisao = malloc(1033 * sizeof(int));
+
   int size = 512;
 
   for(int i=0; i<1024; i++)
   {
     vetor[i] = -1;
+    vetor_tem_colisao[i] = 0;
   }
   
-//   bateria_de_testes_insert(1000, simple_division, vetor, size);
+//   bateria_de_testes_insert(1000, simple_division, vetor, size, vetor_tem_colisao);
 
-  bateria_de_testes_remocao(1000, simple_division, vetor, size);
+  bateria_de_testes_remocao(1000, simple_division, vetor, size, vetor_tem_colisao);
 
     return 0;
 }
