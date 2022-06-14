@@ -1,6 +1,6 @@
 #include "preparacao.h"
 #include "insere.h"
-#define SIZE 256
+#define SIZE 512
 int main(){
   FILE * f = fopen("placas.txt", "w");
   escreve_arquivo(SIZE, f);

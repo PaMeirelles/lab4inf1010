@@ -59,7 +59,12 @@ void insere(FILE * placas, int size){
   clock_t start_geral;
   clock_t end_geral;
   
-  fread(vetor_de_placas, 9, size, placas);
+  int s = fread(vetor_de_placas, 9, size, placas);
+  if (s != size){
+    fclose(placas);
+    fputs("Falha na leitura do arquivo",stderr);
+    exit(1);
+  }
   start_geral = clock();
   for(int i=0; i<size; i++){
     if(!vetor_de_placas[i]){
@@ -69,8 +74,8 @@ void insere(FILE * placas, int size){
     col = insere_placa(vetor, placa_para_int(vetor_de_placas[i]), 0);
     total_col += col;
     end = clock();
-    printf("Inserido a placa %s. Tempo: %ldms Colisoes: %d\n", vetor_de_placas[i], (1000 * (end-start)) / CLOCKS_PER_SEC, col);
+    printf("Inserido a placa %s. Tempo: %ld microsegundos. Colisoes: %d\n", vetor_de_placas[i], (1000000 * (end-start)) / CLOCKS_PER_SEC, col);
   }
   end_geral = clock();
-  printf("Insercoes finalizadas. Concluido em %ldms com %d colisoes\n", (1000 * (end_geral - start_geral)) / CLOCKS_PER_SEC, total_col);
+  printf("Insercoes finalizadas. Concluido em %ld microsegundos com %d colisoes\n", (1000000 * (end_geral - start_geral)) / CLOCKS_PER_SEC, total_col);
 }
