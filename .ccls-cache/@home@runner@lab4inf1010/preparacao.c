@@ -28,23 +28,6 @@ void gera_placa(char placa[9])
   placa[8] = '\n';
 }
 
-int placa_para_int(char * placa)
-{
-  int n = 0;
-  
-  for(int i=0; i < 3; i++)
-  {
-    n += (placa[i] - 'A') * pow(26, i);
-  }
-  
-  for(int i=3; i < 7; i++)
-  {
-    n += (placa[i] - '0') * pow(9, (i - 3));
-  }
-  
-  return n;
-}
-
 void gera_placas(int n, char placas[n][9])
 {
   for(int i=0; i < n; i++)
