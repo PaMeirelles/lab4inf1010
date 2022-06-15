@@ -97,6 +97,38 @@ int dobra(int key, int k, int * vetor, int magic_number)
   return i;
 }
 
+// usa o hash de dobra
+int busca(int * vetor, int key, int k, int magic_number)
+{
+  int p1 = key & 0x000003FF;
+  int p2 = key & 0x000FFC00;
+  int i = (p1 ^ p2 + magic_number *(int)pow(k, 2)) % 1033;
+  
+  if(i == -1)
+  {
+    return -1;
+  }
+
+  if(vetor[i] == key)
+  {
+    return i;
+  }
+  else
+  {
+    return busca(vetor, key, k+1, magic_number);
+  }
+}
+
+void remove_da_hash(int *vetor, int key, int k, int magic_number)
+{
+  int i = busca(vetor, key, k, magic_number);
+
+  if(k == 0)
+  {
+    vetor[i] = -1;
+  }
+}
+
 void testa_func(int(*f)(int, int, int*, int), int * vetor, int magic_number, int * colisoes, int * keys, int size)
 {
   int collisions = 0;

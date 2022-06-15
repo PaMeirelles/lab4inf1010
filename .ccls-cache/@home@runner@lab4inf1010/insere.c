@@ -41,21 +41,18 @@ int placa_para_int(char * placa)
   
   return n;
 }
-
-void insere(FILE * placas, int size){
-  int vetor[1031];
-
+void prepara_vetor(int vetor[1031]){
   for(int i=0; i<1031; i++){
     vetor[i] = -1;
   }
+}
+void insere(FILE * placas, int size, int * vetor){
+  prepara_vetor(vetor);
   char vetor_de_placas[size][9];
   
   int col;
   int total_col = 0;
   
-  clock_t start;
-  clock_t end;
-
   clock_t start_geral;
   clock_t end_geral;
   
@@ -67,15 +64,10 @@ void insere(FILE * placas, int size){
   }
   start_geral = clock();
   for(int i=0; i<size; i++){
-    if(!vetor_de_placas[i]){
-      break;
-    }
-    start = clock();
     col = insere_placa(vetor, placa_para_int(vetor_de_placas[i]), 0);
     total_col += col;
-    end = clock();
-    printf("Inserido a placa %s. Tempo: %ld microsegundos. Colisoes: %d\n", vetor_de_placas[i], (1000000 * (end-start)) / CLOCKS_PER_SEC, col);
+    printf("Inserido a placa %s. Colisoes: %d\n", vetor_de_placas[i], col);
   }
   end_geral = clock();
-  printf("Insercoes finalizadas. Concluido em %ld microsegundos com %d colisoes\n", (1000000 * (end_geral - start_geral)) / CLOCKS_PER_SEC, total_col);
+  printf("Insercoes finalizadas. Concluido em %ldms com %d colisoes\n", (1000 * (end_geral - start_geral)) / CLOCKS_PER_SEC, total_col);
 }

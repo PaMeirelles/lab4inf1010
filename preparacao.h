@@ -4,3 +4,4 @@
 #include <time.h>
 #include <math.h>
 void escreve_arquivo(int n, FILE * arq);
+void gera_placa(char placa[9]);
