@@ -36,9 +36,10 @@ void gera_placas(int n, char placas[n][9])
   }
 }
 
-void escreve_arquivo(int n, FILE * arq){
+void escreve_arquivo(int n, FILE * arq)
+{
   srand(time(NULL));
   char placas[n][9];
   gera_placas(n, placas);
   fwrite(placas, 9, n, arq);
-  }
+}

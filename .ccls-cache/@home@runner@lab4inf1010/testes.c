@@ -49,3 +49,89 @@ void realiza_testes(int n_chaves, int n_testes){
     printf("%d,%d\n", testes[i][0], testes[i][1]);
   }
 }
+
+int busca(int * vetor, char *placa, int k)
+{
+  int key = placa_para_int(placa);
+  int pos = hash(key, k);
+  
+  if(pos == -1)
+  {
+    return -1;
+  }
+
+  if(vetor[pos] == key)
+  {
+    return pos;
+  }
+  else
+  {
+    return busca(vetor, placa, k+1);
+  }
+}
+
+void remove_da_hash(int *vetor, char *key, int k)
+{
+  int i = busca(vetor, key, k);
+
+  vetor[i] = -1;
+}
+
+
+void realiza_testes_busca(FILE *placas, int n_testes, int *tab_hash)
+{
+  char vetor_de_placas[n_testes][9];
+  int i = 0;
+  
+  clock_t start_geral;
+  clock_t end_geral;
+  
+  int s = fread(vetor_de_placas, 9, n_testes, placas);
+    
+  if (s != n_testes)
+  {
+    fclose(placas);
+    fputs("Falha na leitura do arquivo",stderr);
+    exit(1);
+  }
+
+  start_geral = clock();
+  
+  for(int i=0; i<n_testes; i++)
+  {
+    busca(tab_hash, vetor_de_placas[i], 0);
+  }
+  
+  end_geral = clock();
+  
+  printf("%d buscas finalizadas. Concluido em %ld * 10^(-7) segundos.\n", n_testes, (10000000 * (end_geral - start_geral)) / CLOCKS_PER_SEC);
+}
+
+void realiza_testes_exclusao(FILE *placas, int n_testes, int *tab_hash)
+{
+  char vetor_de_placas[n_testes][9];
+  int i = 0;
+  
+  clock_t start_geral;
+  clock_t end_geral;
+  
+  int s = fread(vetor_de_placas, 9, n_testes, placas);
+    
+  if (s != n_testes)
+  {
+    fclose(placas);
+    fputs("Falha na leitura do arquivo",stderr);
+    exit(1);
+  }
+
+  start_geral = clock();
+  
+  for(int i=0; i<n_testes; i++)
+  {
+    remove_da_hash(tab_hash, vetor_de_placas[i], 0);
+  }
+  
+  end_geral = clock();
+  
+  printf("%d exclusoes finalizadas. Concluido em %ld * 10^(-7) segundos.\n", n_testes, (10000000 * (end_geral - start_geral)) / CLOCKS_PER_SEC);
+}
